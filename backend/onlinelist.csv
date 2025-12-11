@@ -1,0 +1,60 @@
+Category,Organization Name,Website URL,Verification URL
+Online Learning Platform,Coursera,https://www.coursera.org,https://www.coursera.org/verify/
+Online Learning Platform,edX,https://www.edx.org,https://courses.edx.org/certificates/
+Online Learning Platform,Udemy,https://www.udemy.com,https://www.udemy.com/certificate/
+Online Learning Platform,Udemy,https://www.udemy.com,https://www.udemy.com/certificate/
+Online Learning Platform,LinkedIn Learning,https://www.linkedin.com/learning,https://www.linkedin.com/learning/certificates/
+Online Learning Platform,FutureLearn,https://www.futurelearn.com,https://www.futurelearn.com/certificates/
+Online Learning Platform,Udacity,https://www.udacity.com,https://www.udacity.com/certificate/
+Online Learning Platform,Alison,https://alison.com,https://alison.com/cert/verify/
+Online Learning Platform,Great Learning,https://www.mygreatlearning.com,https://www.mygreatlearning.com/verify
+Online Learning Platform,Simplilearn,https://www.simplilearn.com,https://www.simplilearn.com/certificate-verification
+Online Learning Platform,Pluralsight,https://www.pluralsight.com,https://app.pluralsight.com/library/
+Online Learning Platform,Skillshare,https://www.skillshare.com,
+Online Learning Platform,MasterClass,https://www.masterclass.com,
+Online Learning Platform,Codecademy,https://www.codecademy.com,https://www.codecademy.com/profiles/
+Online Learning Platform,freeCodeCamp,https://www.freecodecamp.org,https://www.freecodecamp.org/certification/
+Online Learning Platform,SWAYAM,https://swayam.gov.in,https://swayam.gov.in/certificate_verification
+Online Learning Platform,NPTEL,https://nptel.ac.in,https://nptel.ac.in/noc/
+Online Learning Platform,OpenLearn,https://www.open.edu/openlearn,https://www.open.edu/openlearn/my-badges
+Online Learning Platform,Khan Academy,https://www.khanacademy.org,
+Online Learning Platform,upGrad,https://www.upgrad.com,
+Online Learning Platform,Shaw Academy,https://www.shawacademy.com,
+Online Learning Platform,Open Universities Australia,https://www.open.edu.au,
+Online Learning Platform,360Training,https://www.360training.com,https://www.360training.com/verify-certificate
+Online Learning Platform,CareerFoundry,https://careerfoundry.com,
+Online Learning Platform,Simpliaxis,https://www.simpliaxis.com,
+Online Learning Platform,Knowledgehut,https://www.knowledgehut.com,https://www.knowledgehut.com/verify-certificate
+Online Learning Platform,Cognitive Class (IBM),https://cognitiveclass.ai,https://cognitiveclass.ai/certificates/
+Online Learning Platform,W3Schools,https://www.w3schools.com,https://verify.w3schools.com/
+Company / Tech Provider,Google Skillshop,https://skillshop.withgoogle.com,https://skillshop.exceedlms.com/student/catalog
+Company / Tech Provider,IBM,https://www.ibm.com/training,https://www.credly.com/organizations/ibm/badges
+Company / Tech Provider,Microsoft,https://learn.microsoft.com,https://learn.microsoft.com/en-us/users/me/transcript
+Company / Tech Provider,AWS,https://aws.amazon.com/certification,https://aws.amazon.com/verification
+Company / Tech Provider,HubSpot Academy,https://academy.hubspot.com,https://app.hubspot.com/academy/
+Company / Tech Provider,Meta,https://www.facebook.com/business/learn,https://www.credly.com/organizations/meta/badges
+Company / Tech Provider,Adobe,https://learning.adobe.com,https://www.certmetrics.com/adobe/public/verification.aspx
+Company / Tech Provider,Salesforce Trailhead,https://trailhead.salesforce.com,https://trailhead.salesforce.com/en/credentials/verification
+Company / Tech Provider,Cisco,https://www.cisco.com,https://cp.certmetrics.com/cisco/en/public/verify/credential
+Company / Tech Provider,CompTIA,https://www.comptia.org,https://www.certmetrics.com/comptia/public/verification.aspx
+Company / Tech Provider,Oracle,https://education.oracle.com,https://catalog-education.oracle.com/pls/apex/f?p=1010:VERIFICATION
+Company / Tech Provider,SAP,https://training.sap.com,https://www.credly.com/organizations/sap/badges
+Company / Tech Provider,Palo Alto Networks,https://www.paloaltonetworks.com,https://www.certmetrics.com/paloalto/public/verification.aspx
+Company / Tech Provider,Semrush Academy,https://www.semrush.com/academy,https://www.semrush.com/academy/certificates/
+Company / Tech Provider,Apple,https://training.apple.com,https://training.apple.com/acrs
+Company / Tech Provider,Intel,https://www.intel.com,
+"Company / Tech Provider,Unity",https://learn.unity.com,https://www.credly.com/organizations/unity-technologies/badges,
+Company / Tech Provider,SAS,https://www.sas.com,https://www.certmetrics.com/sas/public/verification.aspx
+Company / Tech Provider,Tableau,https://www.tableau.com,https://www.credly.com/organizations/tableau/badges
+Company / Tech Provider,DeepLearning.AI,https://www.deeplearning.ai,
+Company / Tech Provider,PMI,https://www.pmi.org,https://certification.pmi.org/registry.aspx
+Company / Tech Provider,ISACA,https://www.isaca.org,https://www.isaca.org/credentialing/verify-a-certification
+Company / Tech Provider,(ISC)²,https://www.isc2.org,https://www.isc2.org/member-verification
+Company / Tech Provider,Red Hat,https://www.redhat.com,https://rhtapps.redhat.com/verify
+Company / Tech Provider,VMware,https://www.vmware.com,https://www.certmetrics.com/vmware/public/verification.aspx
+Gov / Non-Profit,WHO,https://www.who.int,https://openwho.org/verify
+Gov / Non-Profit,Linux Foundation,https://www.linuxfoundation.org,https://training.linuxfoundation.org/verification/
+Gov / Non-Profit,British Council,https://www.britishcouncil.org,https://www.britishcouncil.org/education/exams/results
+Gov / Non-Profit,ACCA,https://www.accaglobal.com,https://www.accaglobal.com/gb/en/member/find-a-member.html
+Gov / Non-Profit,CIMA,https://www.cimaglobal.com,https://www.cimaglobal.com/Members/Member-search/
+Gov / Non-Profit,UNICEF,https://www.unicef.org,https://agora.unicef.org/

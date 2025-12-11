@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+python-multipart
+pydantic
+requests
+pytesseract
+Pillow
+pdf2image
+qrcode
+ollama
+opencv-python
+numpy
+mistral 
+beautifulsoup4 
+rapidfuzz 
+playwright
