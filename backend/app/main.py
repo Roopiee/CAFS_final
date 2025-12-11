@@ -1,13 +1,10 @@
 import io
 import logging
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.middleware.cors import CORSMiddleware  # ← ADD THIS
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import run_in_threadpool
 from pdf2image import convert_from_bytes
 from app.config import config
-
-logger = logging.getLogger(__name__)
-logger.setLevel(config.LOG_LEVEL)
 
 # Import Schemas
 from app.schemas import (
@@ -37,14 +34,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Agents
-forensics_agent = ForensicsAgent()
-extraction_agent = ExtractionAgent(api_key="nJpjawyHlBoqUrTBSxtOE2oA2KytRL2Y")
-verification_agent = get_verification_agent()
-
-
+# Initialize logger
 logger = logging.getLogger(__name__)
 logger.setLevel(config.LOG_LEVEL)
+
+# Initialize Agents
+forensics_agent = ForensicsAgent(api_key="nJpjawyHlBoqUrTBSxtOE2oA2KytRL2Y")
+extraction_agent = ExtractionAgent(api_key="nJpjawyHlBoqUrTBSxtOE2oA2KytRL2Y")
+verification_agent = get_verification_agent()
 
 
 @app.post("/verify", response_model=CertificateAnalysisResponse)
@@ -89,10 +86,10 @@ async def verify_certificate(file: UploadFile = File(...)):
         forensics_data = await run_in_threadpool(forensics_agent.analyze, image_bytes)
         
         # --- STAGE 2: EXTRACTION (OCR) ---
-        extraction_data = await run_in_threadpool(extraction_agent.extract, image_bytes)
+        # extract() is now async, so we call it directly
+        extraction_data = await extraction_agent.extract(image_bytes)
 
         # Convert dict to ExtractionResult object
-        from app.schemas import ExtractionResult  # Make sure this import is at the top
         extraction_result = ExtractionResult(**extraction_data)
 
         # --- STAGE 3: VERIFICATION (URL Check) ---
@@ -116,7 +113,15 @@ async def verify_certificate(file: UploadFile = File(...)):
             verification=verification_result
         )
 
+    except ValueError as e:
+        # Validation errors from extraction
+        logger.error(f"Validation error: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid input: {str(e)}")
+    except TimeoutError as e:
+        # Timeout errors from extraction or verification
+        logger.error(f"Timeout error: {e}")
+        raise HTTPException(status_code=504, detail=f"Request timeout: {str(e)}")
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        # Unexpected errors
+        logger.error(f"Unexpected error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

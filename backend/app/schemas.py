@@ -1,5 +1,8 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, field_validator
 from typing import Optional, List, Dict, Any
+from enum import Enum
+from difflib import SequenceMatcher
+
 
 class ForensicsResult(BaseModel):
     manipulation_score: float
@@ -12,10 +15,6 @@ class ForensicsResult(BaseModel):
     llm_confidence: Optional[float] = None
     llm_reasoning: Optional[str] = None
     # REMOVED: metadata field
-
-from enum import Enum
-from difflib import SequenceMatcher
-from pydantic import BaseModel, field_validator
 
 class IssuerName(str, Enum):
     coursera = "Coursera"

@@ -26,13 +26,13 @@ export default function Navbar() {
               href="/" 
               className="text-slate-600 hover:text-orange-600 font-medium transition-colors"
             >
-              Home
+            Home
             </Link>
             <Link 
               href="/#verify" 
               className="text-slate-600 hover:text-orange-600 font-medium transition-colors"
             >
-              Roopakthegreat
+              Verify
             </Link>
             <Link 
               href="/#about" 
