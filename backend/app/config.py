@@ -5,10 +5,6 @@ from typing import Optional
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Config:
-
-    CSV_PATH = os.path.join(BASE_DIR, "data/onlinelist.csv")
-    LOG_LEVEL = "INFO"
-
     """
     Configuration management for the multiagent forgery detection system.
     """
@@ -24,7 +20,7 @@ class Config:
     OLLAMA_HOST: str = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
     # File Paths
-    CSV_PATH: str = os.getenv("CSV_PATH", "onlinelist.csv")
+    CSV_PATH: str = os.getenv("CSV_PATH", os.path.join(BASE_DIR, "data/onlinelist.csv"))
 
     # Logging Configuration
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
