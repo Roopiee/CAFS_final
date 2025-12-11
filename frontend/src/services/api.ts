@@ -1,33 +1,6 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+import type { CertificateAnalysisResponse } from '@/types';
 
-export interface CertificateAnalysisResponse {
-  filename: string;
-  final_verdict: string;
-  forensics: {
-    manipulation_score: number;
-    is_high_risk: boolean;
-    status: string;
-    details: string[];
-    llm_analysis?: string | null;
-    llm_risk_score?: number | null;
-    llm_confidence?: number | null;
-    llm_reasoning?: string | null;
-  };
-  extraction: {
-    candidate_name: string | null;
-    certificate_id: string | null;
-    issuer_name: string | null;
-    issuer_url: string | null;
-    issuer_org?: string | null;
-    raw_text_snippet?: string | null;
-    certificate_date?: string | null;
-  };
-  verification: {
-    is_verified: boolean;
-    message: string;
-    trusted_domain: boolean;
-  };
-}
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 export const verificationService = {
   async uploadCertificate(file: File): Promise<CertificateAnalysisResponse> {

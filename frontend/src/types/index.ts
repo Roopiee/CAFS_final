@@ -4,19 +4,21 @@ export interface ForensicsResult {
     manipulation_score: number;
     is_high_risk: boolean;
     status: string;
-    details?: string[];
-    llm_analysis?: string;
-    llm_risk_score?: number;
-    llm_confidence?: number;
-    llm_reasoning?: string;
+    details?: string[] | null;
+    llm_analysis?: string | null;
+    llm_risk_score?: number | null;
+    llm_confidence?: number | null;
+    llm_reasoning?: string | null;
 }
 
 export interface ExtractionResult {
-    candidate_name?: string;
-    certificate_id?: string;
-    issuer_url?: string;
-    issuer_org?: string;
-    raw_text_snippet?: string;
+    candidate_name?: string | null;
+    certificate_id?: string | null;
+    issuer_url?: string | null;
+    issuer_name?: string | null;
+    issuer_org?: string | null;
+    raw_text_snippet?: string | null;
+    certificate_date?: string | null;
 }
 
 export interface VerificationResult {
