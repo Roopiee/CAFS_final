@@ -13,7 +13,8 @@ export default function VerifiedCertificate({ data }: VerifiedCertificateProps) 
   const handleViewCertificate = () => {
     // Encode data as Base64 and open in new tab
     const jsonString = JSON.stringify(data);
-    const base64Data = btoa(jsonString);
+    // Fix for Unicode characters (InvalidCharacterError)
+    const base64Data = btoa(unescape(encodeURIComponent(jsonString)));
     window.open(`/validation-certificate?data=${base64Data}`, '_blank');
   };
 
