@@ -50,7 +50,7 @@ export default function ManualVerificationForm({ onVerificationComplete }: Manua
         <div className="flex items-start gap-3">
           <AlertCircle className="w-6 h-6 text-yellow-600 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-yellow-900 mb-1">Manual Verification Required</h3>
+            <h3 className="font-semibold text-yellow-900 mb-1">Oops!! Manual Verification Required</h3>
             <p className="text-sm text-yellow-800">
               We couldn't automatically verify this certificate. Please provide the certificate ID 
               and issuer URL manually to complete verification.
