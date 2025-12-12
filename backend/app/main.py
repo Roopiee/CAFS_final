@@ -1,50 +1,54 @@
+"""
+app/main.py
+Main API application entry point.
+"""
 import io
 import logging
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.middleware.cors import CORSMiddleware  # ← ADD THIS
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import run_in_threadpool
 from pdf2image import convert_from_bytes
-from app.config import config
 
-logger = logging.getLogger(__name__)
-logger.setLevel(config.LOG_LEVEL)
+# Import Config
+from app.config import config
 
 # Import Schemas
 from app.schemas import (
     CertificateAnalysisResponse, 
-    ForensicsResult, 
     ExtractionResult, 
     VerificationResult
 )
 
 # Import Agents
+# Assumes you have these files for Forensics and Extraction
 from app.agents.forensics import ForensicsAgent
 from app.agents.ext import ExtractionAgent
-from app.agents.verification import get_verification_agent
+
+# --- KEY CHANGE: Import from the new service architecture ---
+from app.agents.verification.service import get_verification_service
+
+# Initialize Logger
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=config.LOG_LEVEL)
 
 app = FastAPI(title="Multi-Agent Certificate Verifier")
 
-# ← ADD CORS MIDDLEWARE HERE
+# CORS Setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=["*"], # Adjust for production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Initialize Agents
-forensics_agent = ForensicsAgent()
+# (Replace API keys with env variables in production!)
+forensics_agent = ForensicsAgent(api_key="nJpjawyHlBoqUrTBSxtOE2oA2KytRL2Y")
 extraction_agent = ExtractionAgent(api_key="nJpjawyHlBoqUrTBSxtOE2oA2KytRL2Y")
-verification_agent = get_verification_agent()
 
-
-logger = logging.getLogger(__name__)
-logger.setLevel(config.LOG_LEVEL)
+# Initialize the new Verification Service
+verification_service = get_verification_service()
 
 
 @app.post("/verify", response_model=CertificateAnalysisResponse)
@@ -53,15 +57,13 @@ async def verify_certificate(file: UploadFile = File(...)):
     Orchestrates the workflow:
     1. Forensics (ELA/Photoshop Detection)
     2. Extraction (OCR)
-    3. Verification (URL & Domain Check)
+    3. Verification (URL & Domain Check via Playwright/Httpx)
     """
     
-    # 1. Read the raw file bytes
+    # 1. File Pre-processing
     file_bytes = await file.read()
-    
     image_bytes = None
 
-    # 2. Pre-processing: Handle PDF vs Image
     if file.content_type == "application/pdf":
         try:
             # Convert first page of PDF to Image
@@ -69,7 +71,6 @@ async def verify_certificate(file: UploadFile = File(...)):
             if not images:
                 raise HTTPException(status_code=400, detail="PDF is empty or unreadable.")
             
-            # Save the PIL image to a byte stream to mimic a standard image upload
             img_byte_arr = io.BytesIO()
             images[0].save(img_byte_arr, format='PNG')
             image_bytes = img_byte_arr.getvalue()
@@ -84,21 +85,21 @@ async def verify_certificate(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="File must be an image (JPEG/PNG) or a PDF.")
 
     try:
-        # --- STAGE 1: FORENSICS (Check for Photoshop) ---
-        # Run in threadpool to prevent blocking the server
+        # --- STAGE 1: FORENSICS ---
+        # Run CPU-bound task in threadpool
         forensics_data = await run_in_threadpool(forensics_agent.analyze, image_bytes)
         
-        # --- STAGE 2: EXTRACTION (OCR) ---
-        extraction_data = await run_in_threadpool(extraction_agent.extract, image_bytes)
-
-        # Convert dict to ExtractionResult object
-        from app.schemas import ExtractionResult  # Make sure this import is at the top
+        # --- STAGE 2: EXTRACTION ---
+        extraction_data = await extraction_agent.extract(image_bytes)
+        
+        # Validate extraction data using Pydantic Schema
         extraction_result = ExtractionResult(**extraction_data)
 
-        # --- STAGE 3: VERIFICATION (URL Check) ---
-        verification_result = await verification_agent.verify(extraction_result)
+        # --- STAGE 3: VERIFICATION ---
+        # Call the new service's verify method
+        verification_result = await verification_service.verify(extraction_result)
 
-        # --- STAGE 4: FINAL VERDICT LOGIC ---
+        # --- STAGE 4: FINAL VERDICT ---
         final_verdict = "UNVERIFIED"
 
         if forensics_data.is_high_risk:
@@ -116,7 +117,12 @@ async def verify_certificate(file: UploadFile = File(...)):
             verification=verification_result
         )
 
+    except ValueError as e:
+        logger.error(f"Validation Error: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid data format: {str(e)}")
+    except TimeoutError as e:
+        logger.error(f"Timeout Error: {e}")
+        raise HTTPException(status_code=504, detail="Processing timed out.")
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"System Error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")

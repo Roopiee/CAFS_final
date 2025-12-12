@@ -47,6 +47,16 @@ class VerificationAgent:
         ],
         "google": [
             "https://skillshop.exceedlms.com/student/award/{cert_id}",
+        ],
+        "ibm": [
+            "https://www.credly.com/badges/{cert_id}",
+            "https://www.credly.com/organizations/ibm/badges/{cert_id}",
+        ],
+        "microsoft": [
+            "https://learn.microsoft.com/en-us/users/{cert_id}/transcript",
+        ],
+        "credly": [
+            "https://www.credly.com/badges/{cert_id}",
         ]
     }
     
@@ -108,7 +118,7 @@ class VerificationAgent:
             return False
 
     def _generate_verification_urls(self, url: str, cert_id: Optional[str], org_name: Optional[str]) -> List[str]:
-        """Generate URL variations to try"""
+        """Generate URL variations to try based on platform"""
         urls = []
         
         if url:
@@ -116,6 +126,19 @@ class VerificationAgent:
         
         if org_name and cert_id:
             org_lower = org_name.lower()
+            
+            # Priority 1: Try to use CSV data (most accurate)
+            if org_lower in self.org_map:
+                base_url = self.org_map[org_lower]
+                # Construct URL by appending cert_id
+                if not base_url.endswith('/'):
+                    constructed_url = base_url + '/' + cert_id
+                else:
+                    constructed_url = base_url + cert_id
+                urls.append(constructed_url)
+                logger.info(f"✓ Constructed URL from CSV: {constructed_url}")
+            
+            # Priority 2: Try hardcoded patterns as fallback
             for platform, patterns in self.URL_PATTERNS.items():
                 if platform in org_lower:
                     for pattern in patterns:
@@ -200,10 +223,11 @@ class VerificationAgent:
         """
         Main verification method
         
-        Strategy: Due to anti-bot protection, we verify based on:
-        1. Extraction quality (name, ID, issuer present)
-        2. Domain trust (domain in trusted list)
-        3. Web verification (try but don't fail if blocked)
+        Strategy: Verify through web crawling or mark as requiring manual verification
+        1. If we have URL/ID → Try web verification
+        2. If web fails → UNVERIFIED (requires manual check)
+        
+        We NEVER auto-verify without web confirmation (security risk!)
         """
         url = extraction_data.issuer_url
         cert_id = extraction_data.certificate_id
@@ -213,62 +237,102 @@ class VerificationAgent:
         logger.info(f"Verifying: {candidate_name}, {org_name}, {cert_id}")
         
         # Check extraction quality
-        has_complete_extraction = bool(candidate_name and cert_id and (org_name or url))
+        has_basic_extraction = bool(candidate_name and org_name)
+        has_id_or_url = bool(cert_id or url)
         
-        # Generate URLs
+        # Check if issuer is recognized (for better messaging)
+        is_known_issuer = False
+        if org_name:
+            org_lower = org_name.lower()
+            is_known_issuer = any(trusted in org_lower or org_lower in trusted 
+                                 for trusted in ['udemy', 'coursera', 'edx', 'linkedin', 'google', 'microsoft', 'ibm'])
+        
+        logger.info(f"Extraction check - has_basic: {has_basic_extraction}, has_id_or_url: {has_id_or_url}, known_issuer: {is_known_issuer}")
+        
+        # Case 1: No URL or ID - Cannot verify
+        if not has_id_or_url:
+            if has_basic_extraction and is_known_issuer:
+                return VerificationResult(
+                    is_verified=False,
+                    message=f"Certificate from {org_name} identified. However, no verification URL or certificate ID found on the document. Manual verification required by contacting the issuer directly.",
+                    trusted_domain=True  # Known platform but can't auto-verify
+                )
+            else:
+                return VerificationResult(
+                    is_verified=False,
+                    message="Incomplete extraction. Missing certificate ID, verification URL, or issuer information. Cannot verify.",
+                    trusted_domain=False
+                )
+        
+        # Case 2: We have URL/ID - Try web verification
         urls_to_try = self._generate_verification_urls(url, cert_id, org_name)
         
         if not urls_to_try:
             return VerificationResult(
                 is_verified=False,
-                message="No verification URL available",
-                trusted_domain=False
+                message=f"Could not generate verification URL from available data. Manual verification required.",
+                trusted_domain=is_known_issuer
             )
         
         primary_url = urls_to_try[0]
-        is_trusted = self._is_trusted_domain(primary_url)
+        is_trusted_domain = self._is_trusted_domain(primary_url)
         
-        if not is_trusted:
+        if not is_trusted_domain:
             return VerificationResult(
                 is_verified=False,
-                message=f"Domain not in trusted list: {primary_url}",
+                message=f"Domain not in trusted list: {primary_url}. Manual verification required.",
                 trusted_domain=False
             )
         
         logger.info(f"✓ Domain trusted: {primary_url}")
         
-        # Try web verification (don't fail if blocked)
-        for idx, attempt_url in enumerate(urls_to_try[:2]):  # Try max 2 URLs
-            logger.info(f"Trying web verification: {attempt_url}")
+        # Try web verification (this is the ONLY way to auto-verify)
+        for idx, attempt_url in enumerate(urls_to_try[:2]):
+            logger.info(f"Trying web verification ({idx+1}/2): {attempt_url}")
             
             if idx > 0:
                 await asyncio.sleep(1)
             
-            page_content = await self._fetch_page_content(attempt_url)
+            # Step 1: Try fast fetch with httpx
+            page_content = await self._fetch_with_httpx(attempt_url)
             
+            # Check if httpx result is sufficient
+            match_found = False
             if page_content and candidate_name:
                 is_match, similarity = self._fuzzy_match_name(candidate_name, page_content)
                 if is_match:
-                    logger.info(f"✓ Web verification SUCCESS! Match: {similarity:.0%}")
+                    match_found = True
+                    logger.info(f"✓ Web verification SUCCESS (httpx)! Match: {similarity:.0%}")
                     return VerificationResult(
                         is_verified=True,
-                        message=f"Verified via web crawl (confidence: {similarity:.0%})",
+                        message=f"Certificate verified via web crawl. Name matched with {similarity:.0%} confidence at {attempt_url}",
                         trusted_domain=True
                     )
+            
+            # Step 2: If httpx failed to match (likely SPA/JS-heavy), try Playwright
+            if not match_found and self.use_playwright:
+                logger.info(f"httpx failed to find match, trying Playwright for {attempt_url}")
+                page_content = await self._fetch_with_playwright(attempt_url)
+                
+                if page_content and candidate_name:
+                    is_match, similarity = self._fuzzy_match_name(candidate_name, page_content)
+                    if is_match:
+                        logger.info(f"✓ Web verification SUCCESS (Playwright)! Match: {similarity:.0%}")
+                        return VerificationResult(
+                            is_verified=True,
+                            message=f"Certificate verified via web crawl (browser). Name matched with {similarity:.0%} confidence at {attempt_url}",
+                            trusted_domain=True
+                        )
+                    else:
+                        logger.warning(f"Name not matched at {attempt_url} even with Playwright (similarity: {similarity:.0%})")
+                else:
+                    logger.warning(f"Could not fetch with Playwright: {attempt_url}")
         
-        # Web verification failed/blocked, but extraction is complete + trusted domain
-        if has_complete_extraction and is_trusted:
-            logger.info("✓ Verified based on extraction quality + trusted domain")
-            return VerificationResult(
-                is_verified=True,
-                message=f"Certificate verified from trusted domain ({org_name}). Complete extraction successful. Manual verification: {primary_url}",
-                trusted_domain=True
-            )
-        
-        # Incomplete extraction
+        # Web verification failed - Cannot auto-verify for security
+        logger.warning("Web verification failed - certificate UNVERIFIED")
         return VerificationResult(
             is_verified=False,
-            message=f"Incomplete extraction or verification failed. Manual check: {primary_url}",
+            message=f"Could not automatically verify via web crawl (anti-bot protection or name mismatch). Certificate appears to be from {org_name}. Manual verification recommended: {primary_url}",
             trusted_domain=True
         )
 

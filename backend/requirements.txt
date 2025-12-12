@@ -14,3 +14,5 @@ mistral
 beautifulsoup4 
 rapidfuzz 
 playwright
+paddleocr 
+easyocr
