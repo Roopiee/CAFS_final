@@ -15,4 +15,5 @@ beautifulsoup4
 rapidfuzz 
 playwright
 paddleocr 
+paddlepaddle
 easyocr
