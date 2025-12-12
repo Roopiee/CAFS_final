@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UploadCloud, File as FileIcon, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { UploadCloud, File as FileIcon, Loader2, XCircle } from 'lucide-react';
 import { verificationService } from '@/services/api';
 
 export default function UploadForm() {
@@ -79,7 +79,7 @@ export default function UploadForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+    <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg border border-slate-200 p-6">
       
       {/* Upload Area */}
       <div
@@ -88,8 +88,8 @@ export default function UploadForm() {
         onDrop={handleDrop}
         className={`
           relative border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 cursor-pointer
-          ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
-          ${file ? 'bg-gray-50' : ''}
+          ${isDragging ? 'border-orange-500 bg-orange-50' : 'border-slate-300 hover:border-slate-400'}
+          ${file ? 'bg-slate-50' : ''}
         `}
       >
         <input
@@ -104,21 +104,21 @@ export default function UploadForm() {
         <div className="flex flex-col items-center justify-center space-y-3 pointer-events-none">
           {file ? (
             <>
-              <FileIcon className="w-10 h-10 text-blue-600" />
-              <div className="text-sm text-gray-700 font-medium truncate max-w-[200px]">
+              <FileIcon className="w-10 h-10 text-orange-600" />
+              <div className="text-sm text-slate-700 font-medium truncate max-w-[200px]">
                 {file.name}
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-slate-500">
                 {(file.size / 1024 / 1024).toFixed(2)} MB
               </p>
             </>
           ) : (
             <>
-              <UploadCloud className="w-10 h-10 text-gray-400" />
-              <div className="text-gray-600">
-                <span className="font-semibold text-blue-600">Click to upload</span> or drag and drop
+              <UploadCloud className="w-10 h-10 text-slate-400" />
+              <div className="text-slate-600">
+                <span className="font-semibold text-orange-600">Click to upload</span> or drag and drop
               </div>
-              <p className="text-xs text-gray-500">PDF, PNG, JPG (Max 5MB)</p>
+              <p className="text-xs text-slate-500">PDF, PNG, JPG (Max 5MB)</p>
             </>
           )}
         </div>
@@ -126,7 +126,7 @@ export default function UploadForm() {
 
       {/* Error Message */}
       {error && (
-        <div className="mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-md flex items-center gap-2">
+        <div className="mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-md flex items-center gap-2 border border-red-200">
           <XCircle className="w-4 h-4" />
           {error}
         </div>
@@ -137,8 +137,11 @@ export default function UploadForm() {
         onClick={handleVerification}
         disabled={!file || isUploading}
         className={`
-          w-full mt-6 flex items-center justify-center py-2.5 px-4 rounded-lg font-medium text-white transition-all
-          ${!file || isUploading ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-md'}
+          w-full mt-6 flex items-center justify-center py-3 px-4 rounded-lg font-semibold text-white transition-all
+          ${!file || isUploading 
+            ? 'bg-slate-300 cursor-not-allowed' 
+            : 'bg-orange-600 hover:bg-orange-700 shadow-md hover:shadow-lg active:scale-95'
+          }
         `}
       >
         {isUploading ? (
@@ -147,7 +150,7 @@ export default function UploadForm() {
             Processing...
           </>
         ) : (
-          'Send to Verification'
+          'Verify Certificate'
         )}
       </button>
     </div>
