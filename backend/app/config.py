@@ -1,33 +1,33 @@
+"""
+app/config.py
+Configuration management for the system.
+"""
 import os
-from typing import Optional
 
-
+# Calculate base directory (root of the project)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Config:
-    """
-    Configuration management for the multiagent forgery detection system.
-    """
     
     # LLM Configuration
     LLM_ENABLED: bool = os.getenv("LLM_ENABLED", "true").lower() == "true"
-    LLM_MODEL: str = os.getenv("LLM_MODEL", "mistral")  # Default Ollama model
-    LLM_TIMEOUT: int = int(os.getenv("LLM_TIMEOUT", "30"))  # seconds
-    LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.1"))  # Low temp for consistent analysis
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "mistral")
+    LLM_TIMEOUT: int = int(os.getenv("LLM_TIMEOUT", "30"))
+    LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.1"))
     LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "500"))
     
     # Ollama Configuration
     OLLAMA_HOST: str = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
-    # File Paths
-    CSV_PATH: str = os.getenv("CSV_PATH", os.path.join(BASE_DIR, "data/onlinelist.csv"))
+    # Data Paths
+    # Ensure this points to where your onlinelist.csv actually lives
+    CSV_PATH: str = os.getenv("CSV_PATH", os.path.join(BASE_DIR, "data", "onlinelist.csv"))
 
-    # Logging Configuration
+    # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     
     @classmethod
     def get_llm_config(cls) -> dict:
-        """Returns LLM configuration as a dictionary."""
         return {
             "enabled": cls.LLM_ENABLED,
             "model": cls.LLM_MODEL,

@@ -1,21 +1,13 @@
-from pydantic import BaseModel, HttpUrl, field_validator
-from typing import Optional, List, Dict, Any
+"""
+app/schemas.py
+Pydantic models for data validation and API responses.
+"""
+from pydantic import BaseModel, field_validator
+from typing import Optional, List, Union
 from enum import Enum
 from difflib import SequenceMatcher
 
-
-class ForensicsResult(BaseModel):
-    manipulation_score: float
-    is_high_risk: bool
-    status: str
-    details: Optional[List[str]] = []
-    # LLM Analysis Fields
-    llm_analysis: Optional[str] = None
-    llm_risk_score: Optional[float] = None
-    llm_confidence: Optional[float] = None
-    llm_reasoning: Optional[str] = None
-    # REMOVED: metadata field
-
+# --- Enums ---
 class IssuerName(str, Enum):
     coursera = "Coursera"
     edx = "edX"
@@ -75,7 +67,12 @@ class IssuerName(str, Enum):
     cima = "CIMA"
     unicef = "UNICEF"
 
+# --- Helper Logic ---
 def fuzzy_match_issuer(raw_issuer: str):
+    """
+    Attempts to match a raw string to a known IssuerName enum.
+    Returns the Enum member if confidence > 0.6, else None.
+    """
     if not raw_issuer:
         return None
 
@@ -95,16 +92,35 @@ def fuzzy_match_issuer(raw_issuer: str):
 
     return best if best_score >= 0.6 else None
 
+# --- Core Models ---
+
+class ForensicsResult(BaseModel):
+    manipulation_score: float
+    is_high_risk: bool
+    status: str
+    details: Optional[List[str]] = []
+    # LLM Analysis Fields
+    llm_analysis: Optional[str] = None
+    llm_risk_score: Optional[float] = None
+    llm_confidence: Optional[float] = None
+    llm_reasoning: Optional[str] = None
+
 class ExtractionResult(BaseModel):
     candidate_name: Optional[str] = None
     certificate_id: Optional[str] = None
-    issuer_name: IssuerName | None = None
+    
+    # Can be the Enum OR None
+    issuer_name: Optional[IssuerName] = None
 
     @field_validator("issuer_name", mode="before")
     def validate_issuer(cls, value):
+        """Auto-converts string input to Enum using fuzzy matching"""
         if isinstance(value, IssuerName):
             return value
+        if value is None:
+            return None
         return fuzzy_match_issuer(str(value))
+
     issuer_url: Optional[str] = None
     issuer_org: Optional[str] = None
     raw_text_snippet: Optional[str] = None 
@@ -112,8 +128,11 @@ class ExtractionResult(BaseModel):
 
 class VerificationResult(BaseModel):
     is_verified: bool
-    message: str
     trusted_domain: bool
+    confidence_score: float = 0.0      # NEW: 0.0 to 1.0 (How close was the match?)
+    verification_url: Optional[str] = None  # NEW: The exact link checked (clickable for user)
+    method: str = "none"               # NEW: "exact_match", "fuzzy_match", "domain_only", "failed"
+    message: str
 
 class CertificateAnalysisResponse(BaseModel):
     filename: str
