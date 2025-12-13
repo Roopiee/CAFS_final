@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AlertCircle, Loader2, CheckCircle } from 'lucide-react';
+import { AlertCircle, Loader2, CheckCircle, ArrowRight } from 'lucide-react';
 import { verificationService } from '@/services/api';
 import { CertificateAnalysisResponse } from '@/types';
 
@@ -43,64 +43,75 @@ export default function ManualVerificationForm({ onVerificationComplete }: Manua
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-xl mx-auto p-4">
       
-      {/* Info Header */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-5 mb-6">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="w-6 h-6 text-yellow-600 mt-0.5" />
+      {/* Modern Info Header */}
+      <div className="bg-amber-50 border-l-4 border-amber-500 rounded-r-lg p-5 mb-8 shadow-sm">
+        <div className="flex items-start gap-4">
+          <div className="p-2 bg-amber-100 rounded-full shrink-0">
+            <AlertCircle className="w-5 h-5 text-amber-600" />
+          </div>
           <div>
-            <h3 className="font-semibold text-yellow-900 mb-1">Oops!! Manual Verification Required</h3>
-            <p className="text-sm text-yellow-800">
-              We couldn't automatically verify this certificate. Please provide the certificate ID 
-              and issuer URL manually to complete verification.
+            <h3 className="font-bold text-gray-900 text-lg">Manual Verification Required</h3>
+            <p className="text-slate-600 mt-1 leading-relaxed">
+              We couldn't automatically verify this certificate. Please enter the details manually below.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 space-y-5">
-        
-        {/* Certificate ID Input */}
-        <div>
-          <label htmlFor="certificate-id" className="block text-sm font-medium text-gray-700 mb-2">
-            Certificate ID <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="certificate-id"
-            value={certificateId}
-            onChange={(e) => setCertificateId(e.target.value)}
-            placeholder="e.g., ABC123456789"
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            disabled={isVerifying}
-          />
-          <p className="mt-1 text-xs text-gray-500">Enter the unique certificate identifier</p>
-        </div>
+      {/* Card Form */}
+      <form 
+        onSubmit={handleSubmit} 
+        className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 p-8 space-y-6"
+      >
+        <div className="space-y-6">
+          {/* Certificate ID Input */}
+          <div className="group">
+            <label htmlFor="certificate-id" className="block text-sm font-semibold text-slate-700 mb-2">
+              Certificate ID
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                id="certificate-id"
+                value={certificateId}
+                onChange={(e) => setCertificateId(e.target.value)}
+                placeholder="e.g., ABC123456789"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 outline-none placeholder:text-slate-400"
+                disabled={isVerifying}
+              />
+            </div>
+            <p className="mt-2 text-xs text-slate-500 flex items-center gap-1">
+              <ArrowRight className="w-3 h-3" /> The unique ID found on the certificate
+            </p>
+          </div>
 
-        {/* Issuer URL Input */}
-        <div>
-          <label htmlFor="issuer-url" className="block text-sm font-medium text-gray-700 mb-2">
-            Issuer URL <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="url"
-            id="issuer-url"
-            value={issuerUrl}
-            onChange={(e) => setIssuerUrl(e.target.value)}
-            placeholder="e.g., https://coursera.org/verify/ABC123456789"
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            disabled={isVerifying}
-          />
-          <p className="mt-1 text-xs text-gray-500">Full verification URL from the certificate issuer</p>
+          {/* Issuer URL Input */}
+          <div className="group">
+            <label htmlFor="issuer-url" className="block text-sm font-semibold text-slate-700 mb-2">
+              Issuer Verification URL
+            </label>
+            <input
+              type="url"
+              id="issuer-url"
+              value={issuerUrl}
+              onChange={(e) => setIssuerUrl(e.target.value)}
+              placeholder="e.g., https://coursera.org/verify/..."
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 outline-none placeholder:text-slate-400"
+              disabled={isVerifying}
+            />
+            <p className="mt-2 text-xs text-slate-500 flex items-center gap-1">
+              <ArrowRight className="w-3 h-3" /> The direct link to verify this credential
+            </p>
+          </div>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="p-3 bg-red-50 text-red-600 text-sm rounded-md flex items-center gap-2">
-            <AlertCircle className="w-4 h-4" />
-            {error}
+          <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <span className="font-medium">{error}</span>
           </div>
         )}
 
@@ -109,21 +120,21 @@ export default function ManualVerificationForm({ onVerificationComplete }: Manua
           type="submit"
           disabled={isVerifying || !certificateId.trim() || !issuerUrl.trim()}
           className={`
-            w-full flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-medium text-white transition-all
+            w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl font-semibold text-white text-sm tracking-wide transition-all duration-200
             ${isVerifying || !certificateId.trim() || !issuerUrl.trim()
-              ? 'bg-gray-300 cursor-not-allowed' 
-              : 'bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg'}
+              ? 'bg-slate-300 cursor-not-allowed opacity-70' 
+              : 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30 active:scale-[0.98]'}
           `}
         >
           {isVerifying ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Verifying...
+              Verifying details...
             </>
           ) : (
             <>
-              <CheckCircle className="w-5 h-5" />
               Verify Certificate
+              <CheckCircle className="w-5 h-5" />
             </>
           )}
         </button>

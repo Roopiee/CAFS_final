@@ -16,7 +16,9 @@ from app.config import config
 from app.schemas import (
     CertificateAnalysisResponse, 
     ExtractionResult, 
-    VerificationResult
+    VerificationResult,
+    ManualVerificationRequest,
+    ForensicsResult
 )
 
 # Import Agents
@@ -126,3 +128,42 @@ async def verify_certificate(file: UploadFile = File(...)):
     except Exception as e:
         logger.error(f"System Error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+@app.post("/verify/manual", response_model=CertificateAnalysisResponse)
+async def manual_verification(request: ManualVerificationRequest):
+    """
+    Handle manual verification with User provided ID and URL.
+    """
+    try:
+        # Create a dummy result structure for consistency
+        # In a real app, you might want a separate lighter response model, 
+        # but re-using CertificateAnalysisResponse keeps frontend types simple for now.
+        
+        logger.info(f"Received manual verification request for ID: {request.certificate_id}")
+        
+        verification_result = await verification_service.manual_verify(
+            request.certificate_id, 
+            request.issuer_url
+        )
+        
+        # Construct response
+        return CertificateAnalysisResponse(
+            filename="Manual Verification",
+            final_verdict="VERIFIED" if verification_result.is_verified else "UNVERIFIED",
+            forensics=ForensicsResult(
+                manipulation_score=0.0, 
+                is_high_risk=False, 
+                status="skipped", 
+                details=["Manual verification skipped forensics"]
+            ),
+            extraction=ExtractionResult(
+                candidate_name="Unknown (Manual)",
+                certificate_id=request.certificate_id,
+                issuer_url=request.issuer_url
+            ),
+            verification=verification_result
+        )
+
+    except Exception as e:
+        logger.error(f"Manual Verification Error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Manual verification failed: {str(e)}")

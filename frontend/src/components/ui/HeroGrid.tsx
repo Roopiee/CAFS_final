@@ -145,11 +145,11 @@ export const HeroGrid: React.FC<HeroGridProps> = ({ onVerifyClick }) => {
           className="flex flex-wrap gap-12 justify-center text-sm pt-8 text-slate-500"
         >
           <div className="flex flex-col items-center gap-1">
-            <div className="text-3xl font-bold text-slate-900">98%</div>
+            <div className="text-3xl font-bold text-slate-900">90%</div>
             <div>Accuracy</div>
           </div>
           <div className="flex flex-col items-center gap-1">
-            <div className="text-3xl font-bold text-slate-900">&lt;10s</div>
+            <div className="text-3xl font-bold text-slate-900">&lt;20s</div>
             <div>Processing</div>
           </div>
           <div className="flex flex-col items-center gap-1">

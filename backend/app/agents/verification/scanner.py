@@ -68,8 +68,19 @@ async def _fetch_playwright(url: str) -> Tuple[Optional[str], Optional[str]]:
             page = await context.new_page()
             
             try:
-                await page.goto(url, timeout=15000, wait_until='domcontentloaded')
-                await page.wait_for_timeout(2000) 
+                try:
+                    # Primary attempt: Wait for network idle (most reliable for content)
+                    await page.goto(url, timeout=30000, wait_until='networkidle')
+                except Exception:
+                    # Fallback: If network is busy (ads/tracking), just wait for DOM
+                    logger.warning(f"Networkidle timed out for {url}, falling back to domcontentloaded.")
+                    try:
+                        # Ensure we at least have the DOM
+                        await page.wait_for_load_state('domcontentloaded', timeout=10000)
+                        # Give it a moment to hydrate/render content if networkidle failed
+                        await page.wait_for_timeout(5000)
+                    except Exception:
+                        logger.warning(f"DOM load also timed out for {url}, proceeding with whatever is rendered.")
 
                 # Snapshot Logic
                 proof_dir = os.path.join(os.getcwd(), "proofs")

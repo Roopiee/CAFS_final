@@ -83,6 +83,61 @@ class VerificationService:
 
         return VerificationResult(is_verified=False, trusted_domain=True, confidence_score=round(best_score,2), verification_url=best_url, method="failed", message=f"Verification failed. Best Match: {best_score:.0%}")
 
+    async def manual_verify(self, certificate_id: str, issuer_url: str) -> VerificationResult:
+        """
+        Manually verifies a certificate using ID and URL provided by user.
+        Checks for Certificate ID presence in the page text/screenshot.
+        """
+        logger.info(f"Manual Verification: {certificate_id} @ {issuer_url}")
+        
+        # 1. Fetch Page (Force Browser to ensure full render and screenshot)
+        page_text, screenshot_path = await fetch_page_text(issuer_url, force_browser=True)
+        
+        if not page_text and not screenshot_path:
+             logger.warning("Manual verify: No text and no screenshot.")
+             return VerificationResult(is_verified=False, trusted_domain=False, verification_url=issuer_url, method="manual_failed", message="Could not fetch page content.")
+
+        # 2. Check for Certificate ID in Text
+        confidence = 0.0
+        is_verified = False
+        method = "manual_failed"
+        message = "Certificate ID not found on page."
+
+        # Normalize logic
+        clean_id = re.sub(r'[^a-zA-Z0-9]', '', certificate_id).lower()
+        
+        if page_text:
+            clean_text = re.sub(r'[^a-zA-Z0-9]', '', page_text).lower()
+            # Debug log
+            logger.info(f"Manual Text Check: Looking for '{clean_id}' in {len(clean_text)} chars. text[:50]={clean_text[:50]}...")
+            
+            if clean_id in clean_text:
+                confidence = 1.0
+                is_verified = True
+                method = "manual_text_match"
+                message = "Certificate ID found in page text."
+
+        # 3. Check for Certificate ID in Screenshot (OCR)
+        if not is_verified and screenshot_path:
+            # We use the VisualVerifier but need to adapt it effectively for ID
+            # VisualVerifier.verify_screenshot expects candidate_name to match
+            # We can re-use it by passing certificate_id as the "name" to look for
+            v_match, v_score, extracted_text = self.visual.verify_screenshot(screenshot_path, certificate_id)
+            if v_match:
+                confidence = v_score
+                is_verified = True
+                method = "manual_visual_ocr"
+                message = f"Certificate ID found in screenshot. Match: {v_score:.0%}"
+        
+        return VerificationResult(
+            is_verified=is_verified,
+            trusted_domain=True, # We assume user provided URL is where they want to check, or we could valid against registry
+            confidence_score=confidence,
+            verification_url=issuer_url,
+            method=method,
+            message=message
+        )
+
 # Singleton
 _service_instance: Optional[VerificationService] = None
 def get_verification_service() -> VerificationService:
