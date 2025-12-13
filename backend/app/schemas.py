@@ -140,3 +140,7 @@ class CertificateAnalysisResponse(BaseModel):
     forensics: ForensicsResult
     extraction: ExtractionResult
     verification: VerificationResult
+
+class ManualVerificationRequest(BaseModel):
+    certificate_id: str
+    issuer_url: str

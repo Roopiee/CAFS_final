@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Navbar from '@/components/ui/Navbar';
 import VerifiedCertificate from '@/components/verification/VerifiedCertificate';
 import ManualVerificationForm from '@/components/verification/ManualVerificationForm';
+import CertificateNotFound from '@/components/verification/CertificateNotFound';
 import { Loader2, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { CertificateAnalysisResponse } from '@/types';
 
@@ -86,7 +87,7 @@ export default function VerifyResultPage() {
     <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       <Navbar />
       
-      <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
+      <div className="max-w-7xl mx-auto px-4 pt-24 pb-8 md:pt-32 md:pb-12">
         
         {/* Back Button */}
         <Link 
@@ -114,19 +115,17 @@ export default function VerifyResultPage() {
           </div>
         ) : (
           <div>
-            <VerifiedCertificate data={result} />
-            
-            {/* Option to try manual verification */}
-            {result.final_verdict !== 'VERIFIED' && (
-              <div className="text-center mt-8">
-                <button
-                  onClick={() => setShowManualForm(true)}
-                  className="text-blue-600 hover:text-blue-700 font-medium underline"
-                >
-                  Try Manual Verification
-                </button>
-              </div>
+            {result.verification.is_verified ? (
+                <VerifiedCertificate data={result} />
+            ) : (
+                <CertificateNotFound />
             )}
+            
+            {/* Option to try manual verification - Only show if Verified (to allow re-verify?) or maybe just hide if not found? 
+                Actually if Not Found, CertificateNotFound page has "Try Again" which reloads. 
+                If Verified, we might not need this button anymore. 
+                But let's keep it consistent with request: "if verified -> verified page", "if not -> not found page".
+            */}
           </div>
         )}
       </div>

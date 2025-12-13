@@ -36,7 +36,7 @@ export default function Navbar() {
             <span className={`text-xl font-bold tracking-tight transition-colors ${
               scrolled ? 'text-white' : 'text-slate-900'
             }`}>
-              SKILL<span className="text-orange-700">KENDRA</span>
+              SKILL<span className="text-orange-600">KENDRA</span>
             </span>
           </Link>
 
@@ -55,10 +55,10 @@ export default function Navbar() {
             ))}
             
             <Link 
-              href="/#verify" 
+              href="/profile" 
               className="px-5 py-2.5 rounded-full bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700 transition-all shadow-md hover:shadow-orange-500/20"
             >
-              Get Started
+              Profile
             </Link>
           </div>
 
@@ -90,11 +90,11 @@ export default function Navbar() {
               </Link>
             ))}
              <Link 
-              href="/#verify" 
+              href="/profile" 
               className="block w-full text-center px-4 py-3 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700 transition-colors"
               onClick={() => setIsOpen(false)}
             >
-              Get Started
+              Profile
             </Link>
           </div>
         )}

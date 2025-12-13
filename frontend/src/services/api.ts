@@ -15,20 +15,48 @@ export const verificationService = {
 
       if (!response.ok) {
         // Try to get error details from response
-        const error = await response.json().catch(() => ({ 
-          detail: `Server returned ${response.status}` 
+        const error = await response.json().catch(() => ({
+          detail: `Server returned ${response.status}`
         }));
         throw new Error(error.detail || `HTTP error! status: ${response.status}`);
       }
 
       const data: CertificateAnalysisResponse = await response.json();
       return data;
-      
+
     } catch (error) {
       if (error instanceof Error) {
         throw error;
       }
       throw new Error('Failed to connect to verification server. Please ensure the backend is running.');
+    }
+  },
+
+  async manualVerify(data: { certificate_id: string; issuer_url: string }): Promise<CertificateAnalysisResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/verify/manual`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({
+          detail: `Server returned ${response.status}`
+        }));
+        throw new Error(error.detail || `HTTP error! status: ${response.status}`);
+      }
+
+      const result: CertificateAnalysisResponse = await response.json();
+      return result;
+
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Manual verification failed.');
     }
   },
 
