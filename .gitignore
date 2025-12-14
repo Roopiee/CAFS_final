@@ -3,3 +3,5 @@ backend/venv/
 backend/venv/
 venv/
 __pycache__/
+backend/TruFor
+.DS_Store

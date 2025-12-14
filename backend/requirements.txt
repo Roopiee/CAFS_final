@@ -17,3 +17,8 @@ playwright
 paddleocr 
 paddlepaddle
 easyocr
+torch 
+torchvision
+timm
+scikit-image
+scipy
