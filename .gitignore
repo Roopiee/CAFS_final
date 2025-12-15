@@ -5,4 +5,4 @@ venv/
 __pycache__/
 backend/TruFor
 .DS_Store
-backend/models/
+backend/models/trufor/trufor.pth.tar
