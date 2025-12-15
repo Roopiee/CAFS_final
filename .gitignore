@@ -5,4 +5,7 @@ venv/
 __pycache__/
 backend/TruFor
 .DS_Store
-backend/models/trufor/trufor.pth.tar
+# ML model weights
+*.pth
+*.pth.tar
+backend/models/trufor/
