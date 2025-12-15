@@ -1,8 +1,9 @@
 """
-Test TruFor installation (PyTorch 2.6+ compatible)
+Test TruFor installation
 Run: python test_trufor.py
 """
-
+import torch
+import numpy as np
 import sys
 import os
 
@@ -35,7 +36,7 @@ except ImportError as e:
     sys.exit(1)
 
 # Test 4: Check for model file
-model_path = "models/trufor/trufor.pth.tar"  # Updated filename
+model_path = "models/trufor/trufor_model.pth.tar"
 if os.path.exists(model_path):
     print(f"✓ Model file found at: {model_path}")
     file_size = os.path.getsize(model_path) / (1024 * 1024)
@@ -44,16 +45,11 @@ else:
     print(f"⚠️  Model file not found at: {model_path}")
     print("  You need to download it from TruFor releases")
 
-# Test 5: Try to load model (if file exists) - PyTorch 2.6+ compatible
+# Test 5: Try to load model (if file exists)
 if os.path.exists(model_path):
     try:
-        # Use weights_only=False for trusted TruFor model
-        checkpoint = torch.load(model_path, map_location='cpu', weights_only=False)
+        checkpoint = torch.load(model_path, map_location='cpu')
         print("✓ Model file is valid and loadable")
-        
-        # Check what's in the checkpoint
-        if isinstance(checkpoint, dict):
-            print(f"✓ Checkpoint contains: {list(checkpoint.keys())}")
     except Exception as e:
         print(f"❌ Error loading model: {e}")
         sys.exit(1)
